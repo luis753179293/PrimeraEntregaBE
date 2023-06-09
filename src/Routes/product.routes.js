@@ -2,7 +2,7 @@ import express from 'express';
 import { ProductManager } from '../ProductManager.js';
 
 const router = express.Router();
-const productsPath = '../products.json';
+const productsPath = './products.json';
 const productManager = new ProductManager(productsPath);
 
 router.get('/', async (req, res) => {
@@ -18,32 +18,49 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:pid', async (req, res) => {
-  const productId = req.params.pid;
-  const product = await productManager.getProductById(productId);
-  if (product) {
+  try  {
+    const productId = parseInt(req.params.pid);
+    const product = await productManager.getProductById(productId);
     res.json(product);
-  } else {
+  } catch (error) {
+    console.log(error)
     res.status(404).json({ error: 'Producto no encontrado' });
   }
 });
 
 router.post('/', async (req, res) => {
-  const newProduct = req.body;
-  await productManager.addProduct(newProduct);
-  res.status(201).json({ message: 'Producto agregado exitosamente' });
+  try{
+    const newProduct = req.body ;
+    await productManager.addProduct(newProduct);
+    res.status(201).json({ message: 'Producto agregado exitosamente' });
+  } catch (error){
+    res.status(400).json({error: 'Bad request'})
+  }
+  
 });
 
 router.put('/:pid', async (req, res) => {
-  const productId = req.params.pid;
-  const fieldsToUpdate = req.body;
-  await productManager.updateProduct(productId, fieldsToUpdate);
-  res.json({ message: 'Producto actualizado exitosamente' });
+  try{
+    const productId = parseInt(req.params.pid) ;
+    const fieldsToUpdate = req.body;
+    await productManager.updateProduct(productId, fieldsToUpdate);
+    res.json({ message: 'Producto actualizado exitosamente' });
+  }catch(error){
+    console.log(error)
+    res.status(404).json({ error: 'Producto no encontrado' });
+  }
 });
 
 router.delete('/:pid', async (req, res) => {
-  const productId = req.params.pid;
-  await productManager.deleteProduct(productId);
-  res.json({ message: 'Producto eliminado exitosamente' });
+  try{
+    const productId = parseInt(req.params.pid) ;
+    await productManager.deleteProduct(productId);
+    res.json({ message: 'Producto eliminado exitosamente' });
+  }catch (error){
+    console.log(error)
+    res.status(404).json({ error: 'Producto no encontrado' });
+  }
+  
 });
 
 export default router;
