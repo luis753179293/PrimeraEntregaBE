@@ -5,12 +5,39 @@ const router = express.Router();
 const productsPath = './products.json';
 const productManager = new ProductManager(productsPath);
 
+
+
+router.get('/realtimeproducts', async (req, res) => {
+  
+  try {
+    const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
+    const products = await productManager.getProducts();
+    const limitedProducts = products.slice(0, limit);
+    const io = req.app.locals.io;
+    io.emit('productosActualizados', limitedProducts);
+
+    res.render('layout', {
+      title: 'Lista de Productos',
+      productos: limitedProducts
+    }); 
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Error en el servidor' });
+  }
+});
+
 router.get('/', async (req, res) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
     const products = await productManager.getProducts();
     const limitedProducts = products.slice(0, limit);
-    res.json(limitedProducts);
+
+    res.render('layout', {
+      title: 'Lista de Productos',
+      productos: limitedProducts
+    }); 
+
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: 'Error en el servidor' });
